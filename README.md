@@ -80,6 +80,7 @@ sudo ./build/awdl-mon
 | :--- | :--- |
 | **Space** | Pause / Resume monitoring |
 | **L** | Toggle Log View / Dashboard |
+| **E** | Manual Enable or Disable awdl0 |
 | **[** | Decrease Polling Interval (Faster) |
 | **]** | Increase Polling Interval (Slower) |
 | **Q / Ctrl+C** | Quit (Restores awdl0) |

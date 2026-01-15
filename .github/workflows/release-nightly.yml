@@ -1,0 +1,64 @@
+name: Nightly Release
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs at 2 AM UTC every day
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: macos-latest
+    permissions:
+      contents: write # Needed to create releases and upload assets
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+      
+      - name: Get short commit hash
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Build for Apple Silicon (arm64)
+        run: |
+          GOOS=darwin GOARCH=arm64 go build -o awdl-mon-arm64 cmd/awdl-mon/main.go
+        
+      - name: Build for Intel (amd64)
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o awdl-mon-amd64 cmd/awdl-mon/main.go
+
+      - name: Create Release
+        id: create_release
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          publish: true
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload arm64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./awdl-mon-arm64
+          asset_name: awdl-mon-arm64
+          asset_content_type: application/octet-stream
+
+      - name: Upload amd64 binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./awdl-mon-amd64
+          asset_name: awdl-mon-amd64
+          asset_content_type: application/octet-stream

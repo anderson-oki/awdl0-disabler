@@ -25,31 +25,53 @@ jobs:
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
+      - name: Check if release already exists
+        id: check_release
+        run: |
+          TAG="nightly-${{ env.sha_short }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release for tag $TAG already exists. Skipping."
+            echo "skip=true" >> $GITHUB_ENV
+          else
+            echo "Release for tag $TAG does not exist. Proceeding."
+            echo "skip=false" >> $GITHUB_ENV
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build for Apple Silicon (arm64)
+        if: env.skip == 'false'
         run: |
           GOOS=darwin GOARCH=arm64 go build -o awdl-mon-arm64 cmd/awdl-mon/main.go
         
       - name: Build for Intel (amd64)
+        if: env.skip == 'false'
         run: |
           GOOS=darwin GOARCH=amd64 go build -o awdl-mon-amd64 cmd/awdl-mon/main.go
 
       - name: Archive arm64 binary
+        if: env.skip == 'false'
         run: tar -czf awdl-mon-arm64.tar.gz awdl-mon-arm64
 
       - name: Archive amd64 binary
+        if: env.skip == 'false'
         run: tar -czf awdl-mon-amd64.tar.gz awdl-mon-amd64
 
       - name: Create Release
+        if: env.skip == 'false'
         id: create_release
         uses: release-drafter/release-drafter@v6
         with:
           config-name: release-drafter.yml
+          name: 'Nightly ${{ env.sha_short }}'
+          tag: 'nightly-${{ env.sha_short }}'
           publish: true
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload arm64 binary
+        if: env.skip == 'false'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,6 +82,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload amd64 binary
+        if: env.skip == 'false'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,6 +93,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload arm64 tar.gz
+        if: env.skip == 'false'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -80,6 +104,7 @@ jobs:
           asset_content_type: application/gzip
 
       - name: Upload amd64 tar.gz
+        if: env.skip == 'false'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

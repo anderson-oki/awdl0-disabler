@@ -2,6 +2,8 @@
 
 A robust, terminal-based monitoring tool for macOS that automatically disables the `awdl0` (Apple Wireless Direct Link) interface when it activates. This helps mitigate WiFi jitter and lag spikes caused by AirDrop/AirPlay scanning.
 
+![AWDL0 Disabler Screenshot](./assets/main.png)
+
 Built with **Go** and **Bubble Tea**
 
 ## ✨ Features

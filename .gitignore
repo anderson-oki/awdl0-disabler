@@ -1,0 +1,14 @@
+# Test Binary
+*.test
+
+# Logs directory
+logs/
+
+# Editor backup files
+*~
+*.bak
+
+# macOS
+.DS_Store
+
+build/

@@ -1,8 +1,7 @@
 # Test Binary
 *.test
 
-# Logs directory
-logs/
+
 
 # Editor backup files
 *~

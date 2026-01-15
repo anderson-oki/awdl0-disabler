@@ -38,10 +38,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	logsDirPath := filepath.Join(homeDir, ".awdl0-disabler", "logs")
+	if err := os.MkdirAll(logsDirPath, 0755); err != nil {
+		fmt.Printf("Error creating logs directory: %v\n", err)
+		os.Exit(1)
+	}
+
 	configFilePath := filepath.Join(configDirPath, "config.json")
 	configAdapter := configuration.NewJSONConfigAdapter(configFilePath)
 	networkAdapter := network.NewShellNetworkAdapter()
-	loggerAdapter := filesystem.NewFileLoggerAdapter("logs")
+	loggerAdapter := filesystem.NewFileLoggerAdapter(logsDirPath)
 	repoAdapter := persistence.NewMemoryEventRepo()
 
 	if events, err := loggerAdapter.ReadEvents(time.Now()); err == nil {

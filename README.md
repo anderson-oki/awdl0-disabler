@@ -15,7 +15,7 @@ Built with **Go** and **Bubble Tea**
     *   **Dynamic Config**: Adjust the polling interval on the fly.
 *   **Comprehensive Logging**:
     *   **UI Logs**: Scrollable history of recent events.
-    *   **Disk Logs**: Persistent daily logs stored in `./logs/YYYY-MM-DD.log`.
+    *   **Disk Logs**: Persistent daily logs stored in `~/.awdl0-disabler/logs/YYYY-MM-DD.log`.
 *   **Safety**: Automatically restores `awdl0` when you quit the application.
 
 ## 🚀 Installation & Usage
@@ -98,7 +98,6 @@ This project follows **Domain-Driven Design (DDD)** and **Hexagonal Architecture
 │       ├── network/    # Shell commands (ifconfig)
 │       ├── filesystem/ # Disk I/O
 │       └── ui/         # Bubble Tea (TUI)
-└── logs/               # Runtime logs
 ```
 
 ## 🧪 Testing

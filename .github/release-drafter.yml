@@ -21,6 +21,4 @@ template: |
 
   $CHANGES
 no-changes-template: |
-  ## Changes
-
   No changes in this release.

@@ -50,6 +50,40 @@ func (s *MonitorService) Tick() (*domain.Event, error) {
 	return &evt, nil
 }
 
+func (s *MonitorService) ToggleInterface() (*domain.Event, error) {
+	status, err := s.network.CheckInterface("awdl0")
+	if err != nil {
+		return nil, err
+	}
+
+	var evt domain.Event
+	if status == domain.StatusUp {
+		if err := s.network.DisableInterface("awdl0"); err != nil {
+			return nil, err
+		}
+		evt = domain.Event{
+			Timestamp: time.Now(),
+			Type:      domain.EventDisable,
+			Message:   "awdl0 manually disabled",
+		}
+	} else {
+		if err := s.network.EnableInterface("awdl0"); err != nil {
+			return nil, err
+		}
+		evt = domain.Event{
+			Timestamp: time.Now(),
+			Type:      domain.EventEnable,
+			Message:   "awdl0 manually enabled",
+		}
+	}
+
+	_ = s.logger.Log(evt)
+
+	s.repo.Add(evt)
+
+	return &evt, nil
+}
+
 func (s *MonitorService) GetConfig() *domain.Config {
 	return s.config
 }

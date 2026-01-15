@@ -3,12 +3,13 @@ package ui
 import "github.com/charmbracelet/lipgloss"
 
 type Styles struct {
-	Header     lipgloss.Style
-	Footer     lipgloss.Style
-	StatusUp   lipgloss.Style
-	StatusDown lipgloss.Style
-	Bar        lipgloss.Style
-	Dashboard  lipgloss.Style
+	Header        lipgloss.Style
+	Footer        lipgloss.Style
+	StatusUp      lipgloss.Style
+	StatusDown    lipgloss.Style
+	StatusUnknown lipgloss.Style
+	Bar           lipgloss.Style
+	Dashboard     lipgloss.Style
 }
 
 func DefaultStyles() Styles {
@@ -26,6 +27,9 @@ func DefaultStyles() Styles {
 			Bold(true),
 		StatusDown: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#FF0000")).
+			Bold(true),
+		StatusUnknown: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#626262")).
 			Bold(true),
 		Bar: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#7D56F4")),

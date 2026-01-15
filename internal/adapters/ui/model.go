@@ -35,15 +35,19 @@ type Model struct {
 
 	// Styles
 	styles Styles
+
+	// awdl0 status
+	awdl0Status domain.Status
 }
 
 func NewModel(services AppServices) Model {
 	m := Model{
-		services:   services,
-		monitoring: true,
-		logBuffer:  []string{},
-		viewport:   viewport.New(0, 0),
-		styles:     DefaultStyles(),
+		services:    services,
+		monitoring:  true,
+		logBuffer:   []string{},
+		viewport:    viewport.New(0, 0),
+		styles:      DefaultStyles(),
+		awdl0Status: domain.StatusUnknown,
 	}
 
 	// Load historical logs (last 24 hours)
@@ -79,6 +83,11 @@ type checkResultMsg struct {
 	Err   error
 }
 
+type toggleMsg struct {
+	Event *domain.Event
+	Err   error
+}
+
 type configSavedMsg struct {
 	Err error
 }
@@ -100,6 +109,14 @@ func (m Model) checkNetworkCmd() tea.Cmd {
 	return func() tea.Msg {
 		event, err := m.services.Monitor.Tick()
 		return checkResultMsg{Event: event, Err: err}
+	}
+}
+
+func (m Model) toggleInterfaceCmd() tea.Cmd {
+	return func() tea.Msg {
+		event, err := m.services.Monitor.ToggleInterface()
+
+		return toggleMsg{Event: event, Err: err}
 	}
 }
 
@@ -134,6 +151,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "l", "L":
 			m.showLogs = !m.showLogs
+
+		case "e", "E":
+			cmds = append(cmds, m.toggleInterfaceCmd())
 
 		case "up", "right", "down", "left":
 			// If logs are shown, these keys are for scrolling the viewport, not changing polling
@@ -180,6 +200,36 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.logBuffer = m.logBuffer[:100]
 		}
 		m.viewport.SetContent(m.renderLogs())
+
+		// Update stats after check
+		m.buckets = m.services.Stats.GetHistogram(1*time.Hour, 60)
+
+		// Update awdl0 status
+		if msg.Event.Type == domain.EventDisable {
+			m.awdl0Status = domain.StatusDown
+		} else if msg.Event.Type == domain.EventEnable {
+			m.awdl0Status = domain.StatusUp
+		}
+
+	case toggleMsg:
+		if msg.Err != nil {
+			m.statusMsg = fmt.Sprintf("Error toggling: %v", msg.Err)
+			cmds = append(cmds, clearStatusCmd())
+			return m, tea.Batch(cmds...)
+		}
+
+		if msg.Event != nil {
+			m.logBuffer = append([]string{msg.Event.Timestamp.Format("15:04:05") + " " + msg.Event.Message}, m.logBuffer...)
+			if len(m.logBuffer) > 100 {
+				m.logBuffer = m.logBuffer[:100]
+			}
+			m.viewport.SetContent(m.renderLogs())
+			if msg.Event.Type == domain.EventDisable {
+				m.awdl0Status = domain.StatusDown
+			} else if msg.Event.Type == domain.EventEnable {
+				m.awdl0Status = domain.StatusUp
+			}
+		}
 
 		// Update stats after check
 		m.buckets = m.services.Stats.GetHistogram(1*time.Hour, 60)

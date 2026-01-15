@@ -42,7 +42,17 @@ func (m Model) renderHeader() string {
 		style = m.styles.StatusDown
 	}
 
-	content := m.styles.Header.Render(" AWDL0 Disabler ") + " " + style.Render(status) +
+	awdl0Status := " UNKNOWN "
+	awdl0Style := m.styles.StatusUnknown
+	if m.awdl0Status == "UP" {
+		awdl0Status = " ENABLED "
+		awdl0Style = m.styles.StatusUp
+	} else if m.awdl0Status == "DOWN" {
+		awdl0Status = " DISABLED "
+		awdl0Style = m.styles.StatusDown
+	}
+
+	content := m.styles.Header.Render(" AWDL0 Disabler ") + " " + style.Render(status) + " " + awdl0Style.Render(awdl0Status) +
 		fmt.Sprintf(" Poll: %v (↑/↓: Adjust)", m.services.Config.PollingInterval)
 
 	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, content)
@@ -101,6 +111,6 @@ func (m Model) renderFooter() string {
 		return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, style.Render(m.statusMsg))
 	}
 
-	help := "Space: Pause/Resume • L: Logs • ↑: Slower • ↓: Faster • Q: Quit"
+	help := "Space: Pause/Resume • L: Logs • E: Toggle awdl0 • ↑: Slower • ↓: Faster • Q: Quit"
 	return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, m.styles.Footer.Render(help))
 }

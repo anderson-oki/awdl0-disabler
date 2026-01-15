@@ -6,8 +6,9 @@ import "time"
 type Status string
 
 const (
-	StatusUp   Status = "UP"
-	StatusDown Status = "DOWN"
+	StatusUp      Status = "UP"
+	StatusDown    Status = "DOWN"
+	StatusUnknown Status = "Unknown"
 )
 
 // EventType distinguishes between different system actions
@@ -15,6 +16,7 @@ type EventType string
 
 const (
 	EventDisable EventType = "Disable"
+	EventEnable  EventType = "Enable"
 	EventCheck   EventType = "Check"
 )
 

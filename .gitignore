@@ -1,11 +1,10 @@
 # Test Binary
 *.test
 
-
-
-# Editor backup files
+# Editor Files
 *~
 *.bak
+.idea
 
 # macOS
 .DS_Store

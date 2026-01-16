@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -23,7 +24,7 @@ type Model struct {
 	services   AppServices
 	monitoring bool
 	showLogs   bool
-	logBuffer  []string
+	logBuffer  []domain.Event
 	viewport   viewport.Model
 	buckets    []domain.Bucket
 
@@ -44,7 +45,7 @@ func NewModel(services AppServices) Model {
 	m := Model{
 		services:    services,
 		monitoring:  true,
-		logBuffer:   []string{},
+		logBuffer:   []domain.Event{},
 		viewport:    viewport.New(0, 0),
 		styles:      DefaultStyles(),
 		awdl0Status: domain.StatusUnknown,
@@ -53,8 +54,7 @@ func NewModel(services AppServices) Model {
 	// Load historical logs (last 24 hours)
 	recentEvents := services.Stats.GetRecentEvents(24 * time.Hour)
 	for _, e := range recentEvents {
-		line := e.Timestamp.Format("15:04:05") + " " + e.Message
-		m.logBuffer = append([]string{line}, m.logBuffer...)
+		m.logBuffer = append(m.logBuffer, e)
 	}
 
 	// Trim buffer to max size
@@ -64,6 +64,7 @@ func NewModel(services AppServices) Model {
 
 	// Initialize viewport content
 	m.viewport.SetContent(m.renderLogs())
+	m.viewport.GotoBottom()
 
 	return m
 }
@@ -175,7 +176,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.viewport.Width = msg.Width
-		m.viewport.Height = msg.Height - 10 // Leave room for header/footer
+		m.viewport.Height = msg.Height - 6 // Standardize on dynamic calculation in View()
 
 	case tickMsg:
 		if m.monitoring {
@@ -194,12 +195,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Event occurred
-		m.logBuffer = append([]string{msg.Event.Timestamp.Format("15:04:05") + " " + msg.Event.Message}, m.logBuffer...)
+		m.logBuffer = append(m.logBuffer, *msg.Event)
 		// Trim buffer
 		if len(m.logBuffer) > 100 {
-			m.logBuffer = m.logBuffer[:100]
+			m.logBuffer = m.logBuffer[len(m.logBuffer)-100:]
 		}
 		m.viewport.SetContent(m.renderLogs())
+		m.viewport.GotoBottom()
 
 		// Update stats after check
 		m.buckets = m.services.Stats.GetHistogram(1*time.Hour, 60)
@@ -219,11 +221,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if msg.Event != nil {
-			m.logBuffer = append([]string{msg.Event.Timestamp.Format("15:04:05") + " " + msg.Event.Message}, m.logBuffer...)
+			m.logBuffer = append(m.logBuffer, *msg.Event)
 			if len(m.logBuffer) > 100 {
-				m.logBuffer = m.logBuffer[:100]
+				m.logBuffer = m.logBuffer[len(m.logBuffer)-100:]
 			}
 			m.viewport.SetContent(m.renderLogs())
+			m.viewport.GotoBottom()
 			if msg.Event.Type == domain.EventDisable {
 				m.awdl0Status = domain.StatusDown
 			} else if msg.Event.Type == domain.EventEnable {
@@ -257,9 +260,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) renderLogs() string {
-	content := ""
-	for _, line := range m.logBuffer {
-		content += line + "\n"
+	var content strings.Builder
+	for _, event := range m.logBuffer {
+		timestamp := m.styles.Timestamp.Render(event.Timestamp.Format("15:04:05"))
+		content.WriteString(fmt.Sprintf("%s %s\n", timestamp, event.Message))
 	}
-	return content
+	return content.String()
 }

@@ -25,8 +25,9 @@ func (m Model) View() string {
 
 	var content string
 	if m.showLogs {
-		m.viewport.Height = contentH
-		content = m.viewport.View()
+		m.viewport.Width = m.width - m.styles.Logs.GetHorizontalFrameSize()
+		m.viewport.Height = contentH - m.styles.Logs.GetVerticalFrameSize()
+		content = m.styles.Logs.Render(m.viewport.View())
 	} else {
 		content = m.renderDashboard(contentH)
 	}
@@ -105,8 +106,9 @@ func (m Model) renderDashboard(availableHeight int) string {
 func (m Model) renderFooter() string {
 	if m.statusMsg != "" {
 		style := m.styles.Footer
+
 		if strings.HasPrefix(m.statusMsg, "Error") {
-			style = style.Copy().Foreground(lipgloss.Color("196")) // Red
+			style = style.Foreground(lipgloss.Color("196")) // Red
 		}
 		return lipgloss.PlaceHorizontal(m.width, lipgloss.Center, style.Render(m.statusMsg))
 	}

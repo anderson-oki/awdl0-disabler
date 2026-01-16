@@ -85,6 +85,22 @@ sudo ./build/awdl-mon
 | **]** | Increase Polling Interval (Slower) |
 | **Q / Ctrl+C** | Quit (Restores awdl0) |
 
+### ⚠️ Side Effects & Considerations
+
+Disabling the `awdl0` (Apple Wireless Direct Link) interface is a common technique to reduce WiFi jitter and lag spikes on macOS. However, since it is a core Apple technology, disabling it will impact several features:
+
+1.  **AirDrop**: You will not be able to send or receive files via AirDrop.
+2.  **AirPlay**: Screen mirroring or streaming to Apple TV/HomePod may fail or be less stable.
+3.  **Sidecar**: Wireless connection to an iPad as a second display will not work.
+4.  **Continuity & Universal Control**: Features like Handoff, Universal Clipboard, and shared input (mouse/keyboard) will be interrupted.
+5.  **Apple Watch Unlock**: Automatic unlocking of your Mac via Apple Watch will be disabled.
+6.  **Find My**: The Mac's ability to participate in the offline Find My network may be limited.
+
+#### Why use this tool?
+The primary benefit is **WiFi Stability**. macOS periodically scans for AWDL devices, which causes brief but significant latency spikes (ping jumps) and jitter. This tool automates the process of keeping `awdl0` down during sensitive activities like online gaming or video conferencing.
+
+*Note: The application automatically restores the `awdl0` interface when you quit, ensuring these features return to normal immediately.*
+
 ## 🏗 Architecture
 
 This project follows **Domain-Driven Design (DDD)** and **Hexagonal Architecture (Ports & Adapters)** principles.

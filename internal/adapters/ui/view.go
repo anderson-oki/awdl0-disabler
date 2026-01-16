@@ -96,9 +96,20 @@ func (m Model) renderDashboard(availableHeight int) string {
 
 	stats := fmt.Sprintf("Last Hour Activity: %d buckets", len(m.buckets))
 
-	content := lipgloss.JoinVertical(lipgloss.Center, stats, "\n", graph)
+	dashboardContent := lipgloss.JoinVertical(lipgloss.Center, stats, "\n", graph)
 
-	box := m.styles.Dashboard.Render(content)
+	box := m.styles.Dashboard.Render(dashboardContent)
+
+	if m.awdl0Status == "DOWN" {
+		sideEffects := []string{
+			"• AirDrop: Disabled",
+			"• AirPlay & Sidecar: Impacted",
+			"• Continuity & Handoff: Interrupted",
+			"• Watch Unlock: Disabled",
+		}
+		sideEffectsView := m.styles.SideEffects.Render(strings.Join(sideEffects, "  "))
+		box = lipgloss.JoinVertical(lipgloss.Center, box, sideEffectsView)
+	}
 
 	return lipgloss.Place(m.width, availableHeight, lipgloss.Center, lipgloss.Center, box)
 }

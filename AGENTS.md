@@ -9,7 +9,7 @@ The project is built using **Go 1.25.5** and relies on the standard Go toolchain
 ### Build Commands
 - **Build Binary**:
   ```bash
-  go build -o awdl-mon cmd/awdl-mon/main.go
+  go build -o build/awdl-mon cmd/awdl-mon/main.go
   ```
 - **Run Directly**:
   ```bash

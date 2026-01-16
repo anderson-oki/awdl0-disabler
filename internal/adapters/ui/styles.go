@@ -12,6 +12,7 @@ type Styles struct {
 	Dashboard     lipgloss.Style
 	Logs          lipgloss.Style
 	Timestamp     lipgloss.Style
+	SideEffects   lipgloss.Style
 }
 
 func DefaultStyles() Styles {
@@ -38,12 +39,15 @@ func DefaultStyles() Styles {
 		Dashboard: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#7D56F4")).
-			Padding(2, 4),
+			Padding(1, 2),
 		Logs: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#7D56F4")).
 			Padding(0, 1),
 		Timestamp: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#888888")),
+		SideEffects: lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FFFF00")).
+			MarginTop(1),
 	}
 }
